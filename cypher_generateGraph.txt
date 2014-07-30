@@ -1,0 +1,25 @@
+
+
+# I am learning to use Cypher from the Neo4j documentation and from blog posts by Michael Hunger's 'Better Software
+# Development' blog (http://jexp.de/blog/about/), especially for insights about making random graphs in Cypher.
+#
+
+# In the iGraph model, I created 50,000 nodes with a 5% chance of nodes having opinion B over opinion A. In the Cypher
+# version, it's necessary to be more explicit.
+
+FOREACH (r IN range(1, 950) | CREATE (:Agents {id:r, hasOpinion:'A', name:"N"+r}));
+# Takes ~1500ms
+
+FOREACH (r IN range(951, 1000) | CREATE (:Agents {id:r, hasOpinion:'B', name:"N"+r}));
+# Takes ~100ms
+
+# Generating random edges is much more tricky. Using Hunger's cross-product matching algorithm as a basis and combining
+# it with his advice on random sampling, I came up with this version, which creates a random graph but not very quickly.
+
+MATCH (a:Agents),(b:Agents)
+WITH a, b, rand() AS c
+ORDER BY c
+WHERE rand() < .03
+CREATE (a)-[:SpeaksTo]->(b);
+# ~3000ms for ~30k relationships
+
